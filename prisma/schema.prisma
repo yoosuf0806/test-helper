@@ -1,0 +1,131 @@
+// Agile Testing Tool - Prisma schema
+// Two parents: BugTicket (flat) and ImplementationTest (with normalized TestCase children).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Environment {
+  DEV
+  TEST
+  UAT
+  PROD
+}
+
+enum Reproducible {
+  YES
+  NO
+  INTERMITTENT
+}
+
+enum GateStatus {
+  NOT_CHECKED
+  CHECKED
+  NA
+  FINDING
+}
+
+enum RootCauseCategory {
+  CONFIG
+  DATA
+  CODE
+  USER_ERROR
+  WORKING_AS_DESIGNED
+  RD_GAP
+  UNSET
+}
+
+enum BugStatus {
+  OPEN
+  AWAITING_INFO
+  NOT_A_BUG
+  FIXED
+  CLOSED
+}
+
+enum ImplementationTestStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  PASSED
+  FAILED
+  BLOCKED
+}
+
+enum TestCaseType {
+  PROGRESSION
+  REGRESSION
+  NEGATIVE_BOUNDARY
+}
+
+enum TestCaseResult {
+  NOT_RUN
+  PASS
+  FAIL
+  BLOCKED
+}
+
+// ---------------------------------------------------------------------------
+// BugTicket (flat - bug checks live on the row; single user, no need to normalize)
+// ---------------------------------------------------------------------------
+
+model BugTicket {
+  id                   String            @id @default(cuid())
+  ticketNumber         String            @default("")
+  title                String            @default("")
+  environment          Environment       @default(DEV)
+  issueDescription     String            @default("") @db.Text
+  expected             String            @default("") @db.Text
+  actual               String            @default("") @db.Text
+  stepsToReproduce     String            @default("") @db.Text
+  reproducible         Reproducible      @default(INTERMITTENT)
+  checkUserParamStatus GateStatus        @default(NOT_CHECKED)
+  checkUserParamNote   String            @default("") @db.Text
+  checkRdStatus        GateStatus        @default(NOT_CHECKED)
+  checkRdNote          String            @default("") @db.Text
+  identifiedGap        String            @default("") @db.Text
+  rootCauseCategory    RootCauseCategory @default(UNSET)
+  resolution           String            @default("") @db.Text
+  status               BugStatus         @default(OPEN)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// ImplementationTest (parent) + TestCase (child, one-to-many)
+// ---------------------------------------------------------------------------
+
+model ImplementationTest {
+  id                 String                   @id @default(cuid())
+  featureDescription String                   @default("") @db.Text
+  module             String                   @default("")
+  status             ImplementationTestStatus @default(NOT_STARTED)
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  testCases          TestCase[]
+}
+
+model TestCase {
+  id                   String             @id @default(cuid())
+  implementationTestId String
+  implementationTest   ImplementationTest @relation(fields: [implementationTestId], references: [id], onDelete: Cascade)
+  type                 TestCaseType
+  scenario             String             @default("") @db.Text
+  testData             String             @default("") @db.Text
+  expected             String             @default("") @db.Text
+  actual               String             @default("") @db.Text
+  result               TestCaseResult     @default(NOT_RUN)
+  comments             String             @default("") @db.Text
+  sortOrder            Int                @default(0)
+
+  @@index([implementationTestId])
+}
