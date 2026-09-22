@@ -42,25 +42,20 @@ Open http://localhost:3000 and sign in with `APP_PASSWORD`.
 | Var | Purpose |
 |---|---|
 | `DATABASE_URL` | Neon **pooled** connection string (host contains `-pooler`). Required. |
-| `DIRECT_URL` | Neon non-pooled URL, used only by `prisma migrate`. |
+| `DATABASE_URL_UNPOOLED` | Neon non-pooled URL, used only by `prisma migrate`. Auto-injected by Neon's Vercel integration. |
 | `APP_PASSWORD` | The single-user login password. **Required — the app is public without it.** |
 | `SESSION_SECRET` | Long random string used to sign the session cookie. |
 
 ## Deploying to Vercel + Neon
 
 1. Push this repo to GitHub and import it into **Vercel**.
-2. In the Vercel dashboard: **Storage → Marketplace → Neon**, create a database.
-   Vercel injects the connection strings — set **`DATABASE_URL` to the pooled
-   URL** (the one whose host contains `-pooler`). Serverless functions exhaust
-   direct connections, so the pooled URL is required.
-3. Set `DIRECT_URL` to the non-pooled Neon URL (for migrations), plus
-   `APP_PASSWORD` and `SESSION_SECRET`.
-4. Run migrations against the database once:
-   ```bash
-   DATABASE_URL=... DIRECT_URL=... npx prisma migrate deploy
-   ```
-   (or `npx prisma db push` for the initial schema).
-5. Deploy. `npm run build` runs `prisma generate` automatically.
+2. In the Vercel dashboard: **Storage → Marketplace → Neon**, create a database
+   and **Connect** it to the project. This auto-injects `DATABASE_URL` (pooled)
+   and `DATABASE_URL_UNPOOLED` (direct) as environment variables.
+3. Add two more environment variables: `APP_PASSWORD` and `SESSION_SECRET`.
+4. Deploy. The build runs `prisma generate && prisma migrate deploy && next build`,
+   so the schema is created/updated automatically on every deploy — no manual
+   migration step needed.
 
 ## Data model
 

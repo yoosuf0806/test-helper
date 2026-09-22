@@ -6,9 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
+  // Neon's Vercel integration injects both of these automatically:
+  //   DATABASE_URL          -> pooled (host contains "-pooler"), used at runtime
+  //   DATABASE_URL_UNPOOLED -> direct connection, used by `prisma migrate`
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // ---------------------------------------------------------------------------
