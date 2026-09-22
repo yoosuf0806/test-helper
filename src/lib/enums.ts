@@ -63,6 +63,13 @@ export const TEST_CASE_RESULT_LABELS: Record<string, string> = {
   PASS: "Pass",
   FAIL: "Fail",
   BLOCKED: "Blocked",
+  NA: "N/A",
+};
+
+export const TEST_CASE_SOURCE_LABELS: Record<string, string> = {
+  CHECKLIST: "Checklist",
+  MANUAL: "Manual",
+  AI: "AI",
 };
 
 export const ENVIRONMENT_OPTIONS = opts(ENVIRONMENT_LABELS);
@@ -73,6 +80,13 @@ export const BUG_STATUS_OPTIONS = opts(BUG_STATUS_LABELS);
 export const IMPL_STATUS_OPTIONS = opts(IMPL_STATUS_LABELS);
 export const TEST_CASE_TYPE_OPTIONS = opts(TEST_CASE_TYPE_LABELS);
 export const TEST_CASE_RESULT_OPTIONS = opts(TEST_CASE_RESULT_LABELS);
+export const TEST_CASE_SOURCE_OPTIONS = opts(TEST_CASE_SOURCE_LABELS);
+
+// A case is "resolved" once it carries an explicit verdict (anything but Not run).
+export const RESOLVED_RESULTS = ["PASS", "FAIL", "BLOCKED", "NA"] as const;
+export function isResolved(result: string): boolean {
+  return result !== "NOT_RUN";
+}
 
 export const TEST_CASE_TYPES = [
   "PROGRESSION",

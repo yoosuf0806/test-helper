@@ -75,6 +75,13 @@ enum TestCaseResult {
   PASS
   FAIL
   BLOCKED
+  NA
+}
+
+enum TestCaseSource {
+  CHECKLIST
+  MANUAL
+  AI
 }
 
 // ---------------------------------------------------------------------------
@@ -122,6 +129,8 @@ model TestCase {
   implementationTestId String
   implementationTest   ImplementationTest @relation(fields: [implementationTestId], references: [id], onDelete: Cascade)
   type                 TestCaseType
+  category             String             @default("")
+  source               TestCaseSource     @default(MANUAL)
   scenario             String             @default("") @db.Text
   testData             String             @default("") @db.Text
   expected             String             @default("") @db.Text

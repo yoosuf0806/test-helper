@@ -19,12 +19,30 @@ workflows: **Bug Tickets** and **New Implementation Tests**.
 
 1. A bug ticket can't be **FIXED**/**CLOSED** unless **both** gates
    (User Error / Parameter, and RD) are resolved *and* a root cause is set.
-2. An implementation test can't be **PASSED** if any test case is **FAIL** or
-   **NOT_RUN**.
+2. An implementation test can't be **PASSED** if any scenario is **FAIL**.
 3. An implementation test can't be **PASSED** without at least one
-   **Negative / Boundary** test case (forces edge testing).
+   **Negative / Boundary** scenario (forces edge testing).
+4. **Completeness:** an implementation test can't be **PASSED** while any
+   scenario is still **Not run**, and any scenario marked **N/A** must record a
+   reason — so skipping a scenario is always deliberate, never forgotten.
 
 These are enforced in `src/lib/validation.ts` and surfaced as inline errors.
+
+## Checklist-driven testing (not just data entry)
+
+Implementation tests are a guided checklist, not a blank grid:
+
+- **Built-in QA checklist** — every new test auto-seeds the standard scenario
+  types (happy path, boundary min/max, empty/null, invalid format, duplicates,
+  permissions, concurrency, inclusion/exclusion rules, …) from
+  `src/lib/checklist.ts`. Each seeded row starts as *Not run* and must be
+  resolved.
+- **Guided "run" mode** (`/tests/[id]/run`) — steps through one scenario at a
+  time with a progress bar and one-click verdicts (Pass / Fail / Blocked / N/A),
+  saving each verdict as you go.
+- **AI suggestions** (optional) — the *Suggest scenarios* button reads the
+  feature description and proposes extra feature-specific edge cases to add.
+  Requires `ANTHROPIC_API_KEY`; disabled gracefully without it.
 
 ## Local setup
 
@@ -45,6 +63,8 @@ Open http://localhost:3000 and sign in with `APP_PASSWORD`.
 | `DATABASE_URL_UNPOOLED` | Neon non-pooled URL, used only by `prisma migrate`. Auto-injected by Neon's Vercel integration. |
 | `APP_PASSWORD` | The single-user login password. **Required — the app is public without it.** |
 | `SESSION_SECRET` | Long random string used to sign the session cookie. |
+| `ANTHROPIC_API_KEY` | Optional. Enables the AI *Suggest scenarios* button. |
+| `ANTHROPIC_MODEL` | Optional. Model for AI suggestions (default `claude-opus-5`). |
 
 ## Deploying to Vercel + Neon
 

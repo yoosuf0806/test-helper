@@ -85,6 +85,7 @@ export function buildBugTicketWorkbook(bug: BugTicket): Uint8Array<ArrayBuffer> 
 // ---------------------------------------------------------------------------
 
 const TEST_CASE_HEADERS = [
+  "Category",
   "Scenario",
   "Test data",
   "Expected",
@@ -98,6 +99,7 @@ function testCaseRows(cases: TestCase[]): (string | number)[][] {
   return [
     TEST_CASE_HEADERS,
     ...sorted.map((tc) => [
+      tc.category,
       tc.scenario,
       tc.testData,
       tc.expected,
@@ -109,12 +111,13 @@ function testCaseRows(cases: TestCase[]): (string | number)[][] {
 }
 
 const TEST_CASE_COLS = [
+  { wch: 22 },
   { wch: 40 },
-  { wch: 30 },
-  { wch: 30 },
-  { wch: 30 },
+  { wch: 28 },
+  { wch: 28 },
+  { wch: 28 },
   { wch: 12 },
-  { wch: 30 },
+  { wch: 28 },
 ];
 
 export type ImplementationTestWithCases = ImplementationTest & {

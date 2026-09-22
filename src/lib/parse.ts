@@ -60,4 +60,6 @@ export const TEST_RESULT_VALUES = [
   "PASS",
   "FAIL",
   "BLOCKED",
+  "NA",
 ] as const;
+export const TEST_SOURCE_VALUES = ["CHECKLIST", "MANUAL", "AI"] as const;

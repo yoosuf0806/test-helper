@@ -36,7 +36,11 @@ export function validateBugTicket(input: BugTicketInput): FieldErrors {
   return errors;
 }
 
-export type TestCaseLike = { type: string; result: string };
+export type TestCaseLike = {
+  type: string;
+  result: string;
+  comments?: string;
+};
 
 export type ImplementationTestInput = {
   status: string;
@@ -48,6 +52,8 @@ export type ImplementationTestInput = {
  *         FAIL or NOT_RUN.
  * Rule 3: An ImplementationTest cannot be PASSED unless it has at least one
  *         NEGATIVE_BOUNDARY test case row.
+ * Rule 4 (completeness): every scenario must carry an explicit verdict, and any
+ *         scenario marked N/A must record a reason (so skipping is deliberate).
  */
 export function validateImplementationTest(
   input: ImplementationTestInput
@@ -55,21 +61,39 @@ export function validateImplementationTest(
   const errors: FieldErrors = {};
 
   if (input.status === "PASSED") {
-    const blocking = input.testCases.filter(
-      (tc) => tc.result === "FAIL" || tc.result === "NOT_RUN"
-    );
-    if (blocking.length > 0) {
+    // Rule 4a: no unresolved (Not run) scenarios.
+    const notRun = input.testCases.filter((tc) => tc.result === "NOT_RUN");
+    if (notRun.length > 0) {
       errors.status =
-        `Cannot mark PASSED: ${blocking.length} test case(s) still have a ` +
-        `result of Fail or Not run. Every case must Pass, be Blocked, or be removed.`;
+        `Cannot mark PASSED: ${notRun.length} scenario(s) are still "Not run". ` +
+        `Give every scenario a verdict (Pass / Fail / Blocked / N/A).`;
     }
 
+    // Rule 2: no failures.
+    const failed = input.testCases.filter((tc) => tc.result === "FAIL");
+    if (failed.length > 0) {
+      errors.status =
+        `Cannot mark PASSED: ${failed.length} scenario(s) are marked Fail. ` +
+        `Resolve the defects or change the status.`;
+    }
+
+    // Rule 4b: N/A must have a reason.
+    const naNoReason = input.testCases.filter(
+      (tc) => tc.result === "NA" && !(tc.comments && tc.comments.trim())
+    );
+    if (naNoReason.length > 0) {
+      errors.naReason =
+        `Cannot mark PASSED: ${naNoReason.length} scenario(s) are marked N/A ` +
+        `without a reason. Add a comment explaining why each is not applicable.`;
+    }
+
+    // Rule 3: at least one negative/boundary scenario.
     const hasNegative = input.testCases.some(
       (tc) => tc.type === "NEGATIVE_BOUNDARY"
     );
     if (!hasNegative) {
       errors.negativeBoundary =
-        "Cannot mark PASSED: add at least one Negative / Boundary test case. Edge testing is required.";
+        "Cannot mark PASSED: add at least one Negative / Boundary scenario. Edge testing is required.";
     }
   }
 

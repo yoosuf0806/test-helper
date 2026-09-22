@@ -4,6 +4,7 @@ import { validateImplementationTest } from "@/lib/validation";
 import {
   IMPL_STATUS_VALUES,
   TEST_RESULT_VALUES,
+  TEST_SOURCE_VALUES,
   TEST_TYPE_VALUES,
   enumVal,
   str,
@@ -35,6 +36,8 @@ export async function PATCH(req: Request, { params }: Params) {
     perTypeCounter[type] = sortOrder + 1;
     return {
       type,
+      category: str(raw.category),
+      source: enumVal(raw.source, TEST_SOURCE_VALUES, "MANUAL"),
       scenario: str(raw.scenario),
       testData: str(raw.testData),
       expected: str(raw.expected),
